@@ -1,0 +1,33 @@
+networks:
+  ollama-service:
+    name: ollama-service
+services:
+  ollama:
+    image: ollama/ollama
+    container_name: ollama-service
+    init: true
+    restart: always
+    networks:
+      - ollama-service
+    volumes:
+      - /dev:/dev
+      - /mnt/data/models/ollama-cache:/root/.ollama
+      - ./llms/modelfiles:/root/modelfiles
+    environment:
+      # 通过优化计算和内存利用，显著提高了注意力机制的效率和性能
+      - OLLAMA_FLASH_ATTENTION=1
+      # 最大并发请求数
+      - OLLAMA_NUM_PARALLEL=4
+      # 每gpu最大加载模型数
+      - OLLAMA_MAX_LOADED_MODELS=2
+    ports:
+      - 11434:11434
+    privileged: true
+    tty: true
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              # count: 1
+              capabilities: [gpu]
